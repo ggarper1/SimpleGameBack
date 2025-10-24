@@ -1,0 +1,9 @@
+# JSON testing files
+*.json
+
+# env
+.env
+
+# Python
+.venv
+__pycache__/
