@@ -1,64 +1,65 @@
 package objects
 
-import "math"
+import (
+	"errors"
+	"math"
+)
 
 type Line struct {
-	p1 Point
-	p2 Point
+	P1 Point
+	P2 Point
 }
 
-func NewLine(p1 Point, p2 Point) (bool, Line) {
+func NewLine(p1 Point, p2 Point) (Line, error) {
 	if p1.X == p2.X && p1.Y == p2.Y {
-		return false, Line{}
+		return Line{}, errors.New("Cannot create a line with just one point")
 	}
-	return true, Line{p1, p2}
+	return Line{p1, p2}, nil
 }
 
 func (line Line) angle() float64 {
-	dx := line.p1.X - line.p2.X
-	dy := line.p1.Y - line.p2.Y
+	dx := line.P1.X - line.P2.X
+	dy := line.P1.Y - line.P2.Y
 	return math.Atan2(dy, dx)
 }
 
 func (line Line) IntersectionLine(other Line) (bool, Point) {
 	// Formula from: https://en.wikipedia.org/wiki/Line–line_intersection
-	denominator := (line.p1.X-line.p2.X)*(other.p1.Y-other.p2.Y) - (line.p1.Y-line.p2.Y)*(other.p1.X-other.p2.X)
+	denominator := (line.P1.X-line.P2.X)*(other.P1.Y-other.P2.Y) - (line.P1.Y-line.P2.Y)*(other.P1.X-other.P2.X)
 
 	if denominator == 0 {
 		return false, Point{}
 	}
 
-	xNumerator := (line.p1.X*line.p2.Y-line.p1.Y*line.p2.Y)*(other.p1.X-other.p2.X) - (line.p1.X-line.p2.X)*(other.p1.X*other.p2.Y-other.p1.Y*other.p2.X)
-	yNumerator := (line.p1.X*line.p2.Y-line.p1.Y*line.p2.X)*(other.p1.Y-other.p2.Y) - (line.p1.Y-line.p2.Y)*(other.p1.X*other.p2.Y-other.p1.Y*other.p2.X)
+	xNumerator := (line.P1.X*line.P2.Y-line.P1.Y*line.P2.X)*(other.P1.X-other.P2.X) - (line.P1.X-line.P2.X)*(other.P1.X*other.P2.Y-other.P1.Y*other.P2.X)
+	yNumerator := (line.P1.X*line.P2.Y-line.P1.Y*line.P2.X)*(other.P1.Y-other.P2.Y) - (line.P1.Y-line.P2.Y)*(other.P1.X*other.P2.Y-other.P1.Y*other.P2.X)
 
 	return true, Point{xNumerator / denominator, yNumerator / denominator}
 }
 
 func (line Line) IntersectionSegment(segment Segment) (bool, Point) {
 	// Formula from: https://en.wikipedia.org/wiki/Line–line_intersection
-	denominator := (line.p1.X-line.p2.X)*(segment.p1.Y-segment.p2.Y) - (line.p1.Y-line.p2.Y)*(segment.p1.X-segment.p2.X)
+	denominator := (line.P1.X-line.P2.X)*(segment.P1.Y-segment.P2.Y) - (line.P1.Y-line.P2.Y)*(segment.P1.X-segment.P2.X)
 
 	if denominator == 0 {
 		return false, Point{}
 	}
 
-	u := ((line.p1.X-line.p2.X)*(line.p1.Y-segment.p1.Y) - (line.p1.Y-line.p2.Y)*(line.p1.X-segment.p1.X)) / ((line.p1.X-line.p2.X)*(segment.p1.Y-segment.p2.Y) - (line.p1.Y-line.p2.Y)*(segment.p1.X-segment.p2.X))
+	u := -((line.P1.X-line.P2.X)*(line.P1.Y-segment.P1.Y) - (line.P1.Y-line.P2.Y)*(line.P1.X-segment.P1.X)) / denominator
+
 	if u < 0 || u > 1 {
 		return false, Point{}
 	}
 
-	xNumerator := (line.p1.X*line.p2.Y-line.p1.Y*line.p2.Y)*(segment.p1.X-segment.p2.X) - (line.p1.X-line.p2.X)*(segment.p1.X*segment.p2.Y-segment.p1.Y*segment.p2.X)
-	yNumerator := (line.p1.X*line.p2.Y-line.p1.Y*line.p2.X)*(segment.p1.Y-segment.p2.Y) - (line.p1.Y-line.p2.Y)*(segment.p1.X*segment.p2.Y-segment.p1.Y*segment.p2.X)
-
-	x := xNumerator / denominator
-	y := yNumerator / denominator
+	x := segment.P1.X + u*(segment.P2.X-segment.P1.X)
+	y := segment.P1.Y + u*(segment.P2.Y-segment.P1.Y)
 
 	return true, Point{x, y}
 }
 
 func (line Line) ShortestDistanceTo(point Point) float64 {
-	dx := line.p1.X - line.p2.X
-	dy := line.p1.Y - line.p2.Y
+	dx := line.P1.X - line.P2.X
+	dy := line.P1.Y - line.P2.Y
 
-	return math.Abs(dy*point.X-dx*point.Y+line.p2.X*line.p1.Y-line.p1.X*line.p2.Y) / math.Sqrt(math.Pow(dy, 2)+math.Pow(dx, 2))
+	return math.Abs(dy*point.X-dx*point.Y+line.P2.X*line.P1.Y-line.P1.X*line.P2.Y) / math.Sqrt(math.Pow(dy, 2)+math.Pow(dx, 2))
 }
