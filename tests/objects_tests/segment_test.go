@@ -10,9 +10,15 @@ import (
 	"ggarper1/SimpleGameBack/src/storage/objects"
 )
 
-type segmentShortestDistanceToTestCase struct {
+type segmentShortestDistanceToPointTestCase struct {
 	Segment  segment `json:"s"`
 	Point    point   `json:"p"`
+	Distance float64 `json:"distance"`
+}
+
+type segmentShortestDistanceToSegmentTestCase struct {
+	S1       segment `json:"s1"`
+	S2       segment `json:"s2"`
 	Distance float64 `json:"distance"`
 }
 
@@ -23,12 +29,13 @@ type segmentIntersectionSegmentTestCase struct {
 }
 
 type segmentTestJSON struct {
-	ShortestDistanceToTest  []segmentShortestDistanceToTestCase  `json:"distance"`
-	IntersectionSegmentTest []segmentIntersectionSegmentTestCase `json:"segmentIntersection"`
+	ShortestDistanceToPointTest   []segmentShortestDistanceToPointTestCase   `json:"pointDistance"`
+	ShortestDistanceToSegmentTest []segmentShortestDistanceToSegmentTestCase `json:"segmentDistance"`
+	IntersectionSegmentTest       []segmentIntersectionSegmentTestCase       `json:"segmentIntersection"`
 }
 
 // Distance to point
-func testSegmentShortestDistanceTo(t *testing.T, testCases []segmentShortestDistanceToTestCase) {
+func testSegmentShortestDistanceToPoint(t *testing.T, testCases []segmentShortestDistanceToPointTestCase) {
 	for i, testCase := range testCases {
 		t.Run(fmt.Sprintf("Distance to Point Test Case %d", i), func(t *testing.T) {
 			p1 := objects.Point{testCase.Segment.P1.X, testCase.Segment.P1.Y}
@@ -41,12 +48,43 @@ func testSegmentShortestDistanceTo(t *testing.T, testCases []segmentShortestDist
 
 			point := objects.Point{testCase.Point.X, testCase.Point.Y}
 
-			distance := segment.ShortestDistanceTo(point)
+			distance := segment.ShortestDistanceToPoint(point)
 			if CloseEnough(distance, testCase.Distance) {
 				t.Logf("Test Case %d Passed.", i)
 			} else {
 				t.Errorf("Test Case %d Failed:\n\tSegment: ((%.3f, %.3f), (%.3f, %.3f))\n\tPoint: (%.3f, %.3f)\n\tExpected: %.3f, Got: %.3f\n\tDifference: %f",
 					i, segment.P1.X, segment.P1.Y, segment.P2.X, segment.P2.Y, point.X, point.Y, testCase.Distance, distance, math.Abs(testCase.Distance-distance))
+			}
+		})
+	}
+}
+
+// Distance to segment
+func testSegmentShortestDistanceToSegment(t *testing.T, testCases []segmentShortestDistanceToSegmentTestCase) {
+	for i, testCase := range testCases {
+		t.Run(fmt.Sprintf("Distance to Segment Test Case %d", i), func(t *testing.T) {
+			p1 := objects.Point{testCase.S1.P1.X, testCase.S1.P1.Y}
+			p2 := objects.Point{testCase.S1.P2.X, testCase.S1.P2.Y}
+			s1, error := objects.NewSegment(p1, p2)
+			if error != nil {
+				t.Logf("Test Case %d skipped: was not possible to generate a line.", i)
+				return
+			}
+
+			p1 = objects.Point{testCase.S2.P1.X, testCase.S2.P1.Y}
+			p2 = objects.Point{testCase.S2.P2.X, testCase.S2.P2.Y}
+			s2, error := objects.NewSegment(p1, p2)
+			if error != nil {
+				t.Logf("Test Case %d skipped: was not possible to generate a line.", i)
+				return
+			}
+
+			distance := s1.ShortestDistanceToSegment(s2)
+			if CloseEnough(distance, testCase.Distance) {
+				t.Logf("Test Case %d Passed.", i)
+			} else {
+				t.Errorf("Test Case %d Failed:\n\tS1: ((%.3f, %.3f), (%.3f, %.3f))\n\tS2: ((%.3f, %.3f),(%.3f, %.3f))\n\tExpected: %.3f, Got: %.3f\n\tDifference: %f",
+					i, s1.P1.X, s1.P1.Y, s1.P2.X, s1.P2.Y, s2.P1.X, s2.P1.Y, s2.P2.X, s2.P2.Y, testCase.Distance, distance, math.Abs(testCase.Distance-distance))
 			}
 		})
 	}
@@ -111,6 +149,7 @@ func TestSegment(t *testing.T) {
 		t.Fatalf("Failed to unmarshal test data: %v", err)
 	}
 
-	testSegmentShortestDistanceTo(t, testData.ShortestDistanceToTest)
+	testSegmentShortestDistanceToPoint(t, testData.ShortestDistanceToPointTest)
+	testSegmentShortestDistanceToSegment(t, testData.ShortestDistanceToSegmentTest)
 	testSegmentIntersectionSegment(t, testData.IntersectionSegmentTest)
 }

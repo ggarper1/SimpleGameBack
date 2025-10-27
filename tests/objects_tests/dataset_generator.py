@@ -200,7 +200,19 @@ def create_segment_test_dataset():
         distance = s.distance(p)
         test_case = {"s": segment_to_json(s), "p": point_to_json(p), "distance":float_to_json(distance)}
         distance_dataset.append(test_case)
-    test_json["distance"] = distance_dataset
+    test_json["pointDistance"] = distance_dataset
+
+    # Test dataset to test shortest distance method
+    distance_dataset = []
+    for _ in range(TESTS_PER_METHOD):
+        s1 = make_segment()
+        s2 = make_segment()
+        distance = s1.distance(s2)
+        test_case = {"s1": segment_to_json(s1), "s2": segment_to_json(s2), "distance":float_to_json(distance)}
+        distance_dataset.append(test_case)
+    test_json["segmentDistance"] = distance_dataset
+
+
 
     # Test dataset to test intersection with segment method
     intersection_dataset = []
@@ -221,6 +233,7 @@ def create_segment_test_dataset():
             test_case = {"s1" : segment_to_json(s1), "s2" : segment_to_json(s2), "intersection": None}
         intersection_dataset.append(test_case)
     test_json["segmentIntersection"] = intersection_dataset
+
 
     return test_json
 

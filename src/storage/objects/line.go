@@ -12,9 +12,13 @@ type Line struct {
 
 func NewLine(p1 Point, p2 Point) (Line, error) {
 	if p1.X == p2.X && p1.Y == p2.Y {
-		return Line{}, errors.New("Cannot create a line with just one point")
+		return Line{}, errors.New("cannot create a line with just one point")
 	}
 	return Line{p1, p2}, nil
+}
+
+func NewLineFromAngle(p Point, angle float64) Line {
+	return Line{p, Point{p.X + math.Cos(angle), p.Y + math.Sin(angle)}}
 }
 
 func (line Line) angle() float64 {

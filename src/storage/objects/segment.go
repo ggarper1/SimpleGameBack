@@ -17,7 +17,7 @@ func NewSegment(p1 Point, p2 Point) (Segment, error) {
 	return Segment{p1, p2}, nil
 }
 
-func (segment Segment) ShortestDistanceTo(point Point) float64 {
+func (segment Segment) ShortestDistanceToPoint(point Point) float64 {
 	// Algorithm explanation:
 	// 		Imagine a triangle formed by this segment's endpoints
 	// 		and `point`. The shortest distance bewteen the segment
@@ -55,6 +55,15 @@ func (segment Segment) ShortestDistanceTo(point Point) float64 {
 	dx := segment.P1.X - segment.P2.X
 	dy := segment.P1.Y - segment.P2.Y
 	return math.Abs(dy*point.X-dx*point.Y+segment.P1.X*segment.P2.Y-segment.P2.X*segment.P1.Y) / math.Sqrt(math.Pow(dy, 2)+math.Pow(dx, 2))
+}
+
+func (segment Segment) ShortestDistanceToSegment(other Segment) float64 {
+	doIntersect, _ := segment.IntersectionSegment(other)
+	if doIntersect {
+		return 0
+	}
+	return math.Min(math.Min(segment.ShortestDistanceToPoint(other.P1), segment.ShortestDistanceToPoint(other.P2)),
+		math.Min(other.ShortestDistanceToPoint(segment.P1), other.ShortestDistanceToPoint(segment.P2)))
 }
 
 func (segment Segment) IntersectionSegment(other Segment) (bool, Point) {
