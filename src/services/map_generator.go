@@ -2,23 +2,22 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"math/rand/v2"
 
 	"ggarper1/SimpleGameBack/src/storage/objects"
-
-	"github.com/twitchyliquid64/golang-asm/obj"
 )
 
 const (
 	numSegments = 4
 
-	minSegmentSeperation = 0.1
+	minSegmentSeperation = 0.01
 
-	maxAttempts = 20
+	maxAttempts = 10
 
 	maxSegmentLength float64 = 0.4
-	minSegmentLength float64 = 0.2
+	minSegmentLength float64 = 0.1
 )
 
 func generateValidEndPoint(start objects.Point) (objects.Point, error) {
@@ -152,22 +151,22 @@ func generateKingPiece(segments []objects.Segment) (objects.Point, error) {
 func NewMap() objects.Map {
 	player1Segments, err := generateRandomSegments()
 	if err != nil {
-		panic("could not create map")
+		panic(fmt.Sprintf("Could not create map: %v", err))
 	}
 
 	player2Segments, err := generateRandomSegments()
 	if err != nil {
-		panic("could not create map")
+		panic(fmt.Sprintf("could not create map: %v", err))
 	}
 
 	player1king, err := generateKingPiece(player1Segments[:])
 	if err != nil {
-		panic("could not create map")
+		panic(fmt.Sprintf("could not create map: %v", err))
 	}
 
 	player2king, err := generateKingPiece(player2Segments[:])
 	if err != nil {
-		panic("could not create map")
+		panic(fmt.Sprintf("could not create map: %v", err))
 	}
 
 	return objects.Map{
