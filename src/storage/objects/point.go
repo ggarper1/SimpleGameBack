@@ -3,8 +3,8 @@ package objects
 import "math"
 
 type Point struct {
-	X float64
-	Y float64
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
 }
 
 func NewPointFromPolar(angle float64, rho float64) Point {

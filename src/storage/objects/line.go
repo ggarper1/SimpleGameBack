@@ -6,8 +6,8 @@ import (
 )
 
 type Line struct {
-	P1 Point
-	P2 Point
+	P1 Point `json:"p1"`
+	P2 Point `json:"p2"`
 }
 
 func NewLine(p1 Point, p2 Point) (Line, error) {

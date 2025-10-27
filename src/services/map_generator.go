@@ -6,15 +6,19 @@ import (
 	"math/rand/v2"
 
 	"ggarper1/SimpleGameBack/src/storage/objects"
+
+	"github.com/twitchyliquid64/golang-asm/obj"
 )
 
 const (
 	numSegments = 4
 
+	minSegmentSeperation = 0.1
+
 	maxAttempts = 20
 
-	maxSegmentLength float64 = 0.2
-	minSegmentLength float64 = 0.1
+	maxSegmentLength float64 = 0.4
+	minSegmentLength float64 = 0.2
 )
 
 func generateValidEndPoint(start objects.Point) (objects.Point, error) {
@@ -77,14 +81,13 @@ func generateValidEndPoint(start objects.Point) (objects.Point, error) {
 	return objects.Point{}, errors.New("could not generate endpoint under max number of attempts")
 }
 
-func GenerateRandomSegments() ([numSegments]objects.Segment, error) {
+func generateRandomSegments() ([numSegments]objects.Segment, error) {
 	var segments [numSegments]objects.Segment
 
-	idx := 0
-	for idx < numSegments {
+	for idx := range numSegments {
 		added := false
 
-		for attempts := 0; attempts < maxAttempts; attempts++ {
+		for range maxAttempts {
 			start := objects.Point{rand.Float64(), rand.Float64()}
 			end, err := generateValidEndPoint(start)
 			if err != nil {
@@ -93,20 +96,84 @@ func GenerateRandomSegments() ([numSegments]objects.Segment, error) {
 
 			newSegment, err := objects.NewSegment(start, end)
 			if err != nil {
-				panic("this error should always be nil, there must be abug in generateValidEndPoint")
+				panic("this error should always be nil, there must be a bug in generateValidEndPoint")
 			}
 
-			// Check if segment has conflict
-			segments[idx] = newSegment
-			added = true
-			break
+			isValid := true
+			for _, segment := range segments {
+				if newSegment.ShortestDistanceToSegment(segment) < minSegmentSeperation {
+					isValid = false
+					break
+				}
+			}
+
+			if isValid {
+				segments[idx] = newSegment
+				added = true
+				break
+			}
 		}
 		if !added {
 			return segments, errors.New("could not generated segment under max number of attempts")
 		}
-
-		idx++
 	}
 
 	return segments, nil
+}
+
+func generateKingPiece(segments []objects.Segment) (objects.Point, error) {
+	for range maxAttempts {
+		viewPoint := objects.Point{rand.Float64(), 1}
+
+		for range maxAttempts {
+			kingPiece := objects.Point{rand.Float64(), rand.Float64()}
+
+			fakeSegment, err := objects.NewSegment(viewPoint, kingPiece)
+			for err != nil {
+				fakeSegment, err = objects.NewSegment(viewPoint, kingPiece)
+			}
+
+			isValid := true
+			for _, segment := range segments {
+				doIntersect, _ := fakeSegment.IntersectionSegment(segment)
+				if doIntersect {
+					isValid = false
+					break
+				}
+			}
+			if isValid {
+				return kingPiece, nil
+			}
+		}
+	}
+	return objects.Point{}, errors.New("could not generate valid king piece under max attempts")
+}
+
+func NewMap() objects.Map {
+	player1Segments, err := generateRandomSegments()
+	if err != nil {
+		panic("could not create map")
+	}
+
+	player2Segments, err := generateRandomSegments()
+	if err != nil {
+		panic("could not create map")
+	}
+
+	player1king, err := generateKingPiece(player1Segments[:])
+	if err != nil {
+		panic("could not create map")
+	}
+
+	player2king, err := generateKingPiece(player2Segments[:])
+	if err != nil {
+		panic("could not create map")
+	}
+
+	return objects.Map{
+		Player1Segments: player1Segments[:],
+		Player2Segments: player2Segments[:],
+		Player1King:     player1king,
+		Player2King:     player2king,
+	}
 }
