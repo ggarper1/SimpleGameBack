@@ -15,6 +15,9 @@ def plot_map(mapData):
 
     plt.plot(mapData["player1King"]["x"], mapData["player1King"]["y"], 'ro', label='King')
 
+    plt.xlim(0, 1)
+    plt.ylim(0, 1)
+
     plt.grid(True)
     plt.waitforbuttonpress()
     plt.close()
