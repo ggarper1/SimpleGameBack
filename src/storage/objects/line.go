@@ -21,7 +21,7 @@ func NewLineFromAngle(p Point, angle float64) Line {
 	return Line{p, Point{p.X + math.Cos(angle), p.Y + math.Sin(angle)}}
 }
 
-func (line Line) angle() float64 {
+func (line Line) Angle() float64 {
 	dx := line.P1.X - line.P2.X
 	dy := line.P1.Y - line.P2.Y
 	return math.Atan2(dy, dx)

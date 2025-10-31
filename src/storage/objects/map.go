@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	numPieces   = 3
+	NumPieces   = 3
 	numSegments = 4
 
 	minSegmentSeperation = 0.01
@@ -183,8 +183,8 @@ func NewMap() Map {
 		Player2Segments: player2Segments[:],
 		Player1King:     *player1king,
 		Player2King:     *player2king,
-		Player1Pieces:   make([]Piece, 0, numPieces),
-		Player2Pieces:   make([]Piece, 0, numPieces),
+		Player1Pieces:   make([]Piece, 0, NumPieces),
+		Player2Pieces:   make([]Piece, 0, NumPieces),
 	}
 }
 

@@ -3,6 +3,7 @@ package objects
 type Player int
 
 const (
-	Player1 Player = iota
+	NoPlayer Player = iota
+	Player1
 	Player2
 )
