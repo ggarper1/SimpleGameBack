@@ -9,9 +9,11 @@ import (
 )
 
 const (
+	numPieces   = 3
 	numSegments = 4
 
 	minSegmentSeperation = 0.01
+	minPieceSeparation   = 0.005
 
 	maxAttempts = 10
 
@@ -25,6 +27,9 @@ type Map struct {
 
 	Player1King Point `json:"player1King"`
 	Player2King Point `json:"player2King"`
+
+	Player1Pieces []Piece
+	Player2Pieces []Piece
 }
 
 // Map Initializer Code
@@ -178,6 +183,8 @@ func NewMap() Map {
 		Player2Segments: player2Segments[:],
 		Player1King:     *player1king,
 		Player2King:     *player2king,
+		Player1Pieces:   make([]Piece, 0, numPieces),
+		Player2Pieces:   make([]Piece, 0, numPieces),
 	}
 }
 
@@ -190,4 +197,42 @@ func (m Map) ToDTO() []byte {
 	}
 
 	return jsonData
+}
+
+func (m *Map) AddPlayer1Piece(piece Piece) bool {
+	for _, segment := range m.Player1Segments {
+		if segment.ShortestDistanceToPoint(piece.Position) < minPieceSeparation {
+			return false
+		}
+	}
+	if piece.Position.DistanceTo(m.Player1King) < minPieceSeparation {
+		return false
+	}
+	for _, otherPiece := range m.Player1Pieces {
+		if piece.Position.DistanceTo(otherPiece.Position) < minPieceSeparation {
+			return false
+		}
+	}
+
+	m.Player1Pieces = append(m.Player1Pieces, piece)
+	return true
+}
+
+func (m *Map) AddPlayer2Piece(piece Piece) bool {
+	for _, segment := range m.Player2Segments {
+		if segment.ShortestDistanceToPoint(piece.Position) < minPieceSeparation {
+			return false
+		}
+	}
+	if piece.Position.DistanceTo(m.Player2King) < minPieceSeparation {
+		return false
+	}
+	for _, otherPiece := range m.Player2Pieces {
+		if piece.Position.DistanceTo(otherPiece.Position) < minPieceSeparation {
+			return false
+		}
+	}
+
+	m.Player2Pieces = append(m.Player2Pieces, piece)
+	return true
 }

@@ -1,6 +1,6 @@
 package objects
 
 type Piece struct {
-	position Point
-	angle    float64
+	Position Point
+	Angle    float64
 }
