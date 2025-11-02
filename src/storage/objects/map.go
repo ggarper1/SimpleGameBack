@@ -15,6 +15,8 @@ const (
 	minSegmentSeperation = 0.01
 	minPieceSeparation   = 0.005
 
+	MidSectionHalfWidth = 0.1
+
 	maxAttempts = 10
 
 	maxSegmentLength float64 = 0.4
@@ -33,7 +35,7 @@ type Map struct {
 }
 
 // Map Initializer Code
-func generateValidEndPoint(start *Point) (*Point, error) {
+func generateValidEndPoint(start *Point, player Player) (*Point, error) {
 	for range maxAttempts {
 		angle := rand.Float64() * 2 * math.Pi
 
@@ -43,28 +45,60 @@ func generateValidEndPoint(start *Point) (*Point, error) {
 
 		if angle <= math.Pi/2 {
 			rightEdge, _ := NewLine(Point{1, 1}, Point{1, 0})
-			topEdge, _ := NewLine(Point{0, 1}, Point{1, 1})
+			var otherEdge Line
+			switch player {
+			case Player1:
+				otherEdge, _ = NewLine(Point{0, 1 + MidSectionHalfWidth}, Point{1, 1 + MidSectionHalfWidth})
+			case Player2:
+				otherEdge, _ = NewLine(Point{0, -MidSectionHalfWidth}, Point{1, -MidSectionHalfWidth})
+			default:
+				panic("player here should either be player 1 or player 2")
+			}
 
 			doesIntersect1, intersection1 = line.IntersectionLine(rightEdge)
-			doesIntersect2, intersection2 = line.IntersectionLine(topEdge)
+			doesIntersect2, intersection2 = line.IntersectionLine(otherEdge)
 		} else if angle <= math.Pi {
 			leftEdge, _ := NewLine(Point{0, 0}, Point{0, 1})
-			topEdge, _ := NewLine(Point{0, 1}, Point{1, 1})
+			var otherEdge Line
+			switch player {
+			case Player1:
+				otherEdge, _ = NewLine(Point{0, 1 + MidSectionHalfWidth}, Point{1, 1 + MidSectionHalfWidth})
+			case Player2:
+				otherEdge, _ = NewLine(Point{0, -MidSectionHalfWidth}, Point{1, -MidSectionHalfWidth})
+			default:
+				panic("player here should either be player 1 or player 2")
+			}
 
 			doesIntersect1, intersection1 = line.IntersectionLine(leftEdge)
-			doesIntersect2, intersection2 = line.IntersectionLine(topEdge)
+			doesIntersect2, intersection2 = line.IntersectionLine(otherEdge)
 		} else if angle <= 3*math.Pi/2 {
 			leftEdge, _ := NewLine(Point{0, 0}, Point{0, 1})
-			bottomEdge, _ := NewLine(Point{0, 0}, Point{1, 0})
+			var otherEdge Line
+			switch player {
+			case Player1:
+				otherEdge, _ = NewLine(Point{0, MidSectionHalfWidth}, Point{1, MidSectionHalfWidth})
+			case Player2:
+				otherEdge, _ = NewLine(Point{0, -1 - MidSectionHalfWidth}, Point{1, -1 - MidSectionHalfWidth})
+			default:
+				panic("player here should either be player 1 or player 2")
+			}
 
 			doesIntersect1, intersection1 = line.IntersectionLine(leftEdge)
-			doesIntersect2, intersection2 = line.IntersectionLine(bottomEdge)
+			doesIntersect2, intersection2 = line.IntersectionLine(otherEdge)
 		} else {
 			rightEdge, _ := NewLine(Point{1, 1}, Point{1, 0})
-			bottomEdge, _ := NewLine(Point{0, 0}, Point{1, 0})
+			var otherEdge Line
+			switch player {
+			case Player1:
+				otherEdge, _ = NewLine(Point{0, MidSectionHalfWidth}, Point{1, MidSectionHalfWidth})
+			case Player2:
+				otherEdge, _ = NewLine(Point{0, -1 - MidSectionHalfWidth}, Point{1, -1 - MidSectionHalfWidth})
+			default:
+				panic("player here should either be player 1 or player 2")
+			}
 
 			doesIntersect1, intersection1 = line.IntersectionLine(rightEdge)
-			doesIntersect2, intersection2 = line.IntersectionLine(bottomEdge)
+			doesIntersect2, intersection2 = line.IntersectionLine(otherEdge)
 		}
 
 		maxRho := maxSegmentLength
@@ -89,15 +123,23 @@ func generateValidEndPoint(start *Point) (*Point, error) {
 	return &Point{}, errors.New("could not generate endpoint under max number of attempts")
 }
 
-func generateRandomSegments() ([]Segment, error) {
+func generateRandomSegments(player Player) ([]Segment, error) {
 	var segments [numSegments]Segment
 
 	for idx := range numSegments {
 		added := false
 
 		for range maxAttempts {
-			start := Point{rand.Float64(), rand.Float64()}
-			end, err := generateValidEndPoint(&start)
+			var start Point
+			switch player {
+			case Player1:
+				start = Point{rand.Float64(), rand.Float64() + MidSectionHalfWidth}
+			case Player2:
+				start = Point{rand.Float64(), -rand.Float64() - MidSectionHalfWidth}
+			default:
+				panic("player here should be either player 1 or 2")
+			}
+			end, err := generateValidEndPoint(&start, player)
 			if err != nil {
 				continue
 			}
@@ -129,12 +171,20 @@ func generateRandomSegments() ([]Segment, error) {
 	return segments[:], nil
 }
 
-func generateKingPiece(segments []Segment) (*Point, error) {
+func generateKingPiece(segments []Segment, player Player) (*Point, error) {
 	for range maxAttempts {
-		viewPoint := Point{rand.Float64(), 1}
+		viewPoint := Point{rand.Float64(), 0}
 
 		for range maxAttempts {
-			kingPiece := Point{rand.Float64(), rand.Float64()}
+			var kingPiece Point
+			switch player {
+			case Player1:
+				kingPiece = Point{rand.Float64(), rand.Float64() + MidSectionHalfWidth}
+			case Player2:
+				kingPiece = Point{rand.Float64(), -rand.Float64() - MidSectionHalfWidth}
+			default:
+				panic("player here should be either player 1 or 2")
+			}
 
 			fakeSegment, err := NewSegment(viewPoint, kingPiece)
 			for err != nil {
@@ -158,29 +208,29 @@ func generateKingPiece(segments []Segment) (*Point, error) {
 }
 
 func NewMap() Map {
-	player1Segments, err := generateRandomSegments()
+	player1Segments, err := generateRandomSegments(Player1)
 	if err != nil {
 		panic(fmt.Sprintf("Could not create map: %v", err))
 	}
 
-	player2Segments, err := generateRandomSegments()
+	player2Segments, err := generateRandomSegments(Player2)
 	if err != nil {
 		panic(fmt.Sprintf("could not create map: %v", err))
 	}
 
-	player1king, err := generateKingPiece(player1Segments[:])
+	player1king, err := generateKingPiece(player1Segments, Player1)
 	if err != nil {
 		panic(fmt.Sprintf("could not create map: %v", err))
 	}
 
-	player2king, err := generateKingPiece(player2Segments[:])
+	player2king, err := generateKingPiece(player2Segments, Player2)
 	if err != nil {
 		panic(fmt.Sprintf("could not create map: %v", err))
 	}
 
 	return Map{
-		Player1Segments: player1Segments[:],
-		Player2Segments: player2Segments[:],
+		Player1Segments: player1Segments,
+		Player2Segments: player2Segments,
 		Player1King:     *player1king,
 		Player2King:     *player2king,
 		Player1Pieces:   make([]Piece, 0, NumPieces),
@@ -199,40 +249,62 @@ func (m Map) ToDTO() []byte {
 	return jsonData
 }
 
-func (m *Map) AddPlayer1Piece(piece Piece) bool {
+func (m *Map) AddPlayer1Piece(piece Piece) (bool, error) {
+	if len(m.Player1Pieces) == NumPieces {
+		return false, errors.New("trying to add more peices than allowed")
+	}
+
+	if piece.Position.X < 0 || piece.Position.X > 1 {
+		return false, errors.New("Invalid X coordinate")
+	}
+	if piece.Position.Y < MidSectionHalfWidth || piece.Position.Y > 1+MidSectionHalfWidth {
+		return false, errors.New("Invalid Y coordinate")
+	}
+
 	for _, segment := range m.Player1Segments {
 		if segment.ShortestDistanceToPoint(piece.Position) < minPieceSeparation {
-			return false
+			return false, nil
 		}
 	}
 	if piece.Position.DistanceTo(m.Player1King) < minPieceSeparation {
-		return false
+		return false, nil
 	}
 	for _, otherPiece := range m.Player1Pieces {
 		if piece.Position.DistanceTo(otherPiece.Position) < minPieceSeparation {
-			return false
+			return false, nil
 		}
 	}
 
 	m.Player1Pieces = append(m.Player1Pieces, piece)
-	return true
+	return true, nil
 }
 
-func (m *Map) AddPlayer2Piece(piece Piece) bool {
+func (m *Map) AddPlayer2Piece(piece Piece) (bool, error) {
+	if len(m.Player2Pieces) == NumPieces {
+		return false, errors.New("trying to add more peices than allowed")
+	}
+
+	if piece.Position.X < 0 || piece.Position.X > 1 {
+		return false, errors.New("Invalid X coordinate")
+	}
+	if piece.Position.Y > -MidSectionHalfWidth || piece.Position.Y < -1-MidSectionHalfWidth {
+		return false, errors.New("Invalid Y coordinate")
+	}
+
 	for _, segment := range m.Player2Segments {
 		if segment.ShortestDistanceToPoint(piece.Position) < minPieceSeparation {
-			return false
+			return false, nil
 		}
 	}
 	if piece.Position.DistanceTo(m.Player2King) < minPieceSeparation {
-		return false
+		return false, nil
 	}
 	for _, otherPiece := range m.Player2Pieces {
 		if piece.Position.DistanceTo(otherPiece.Position) < minPieceSeparation {
-			return false
+			return false, nil
 		}
 	}
 
 	m.Player2Pieces = append(m.Player2Pieces, piece)
-	return true
+	return true, nil
 }

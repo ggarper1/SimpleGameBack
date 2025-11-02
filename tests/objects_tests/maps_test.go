@@ -26,23 +26,25 @@ func TestMap(t *testing.T) {
 
 			for _, segment := range m.Player1Segments {
 				if segment.P1.X < 0 || segment.P1.X > 1 ||
-					segment.P1.Y < 0 || segment.P1.Y > 1 ||
+					segment.P1.Y < objects.MidSectionHalfWidth || segment.P1.Y > 1+objects.MidSectionHalfWidth ||
 					segment.P2.X < 0 || segment.P2.X > 1 ||
-					segment.P2.Y < 0 || segment.P2.Y > 1 {
+					segment.P2.Y < objects.MidSectionHalfWidth || segment.P2.Y > 1+objects.MidSectionHalfWidth {
 					t.Errorf("Segment is not valid do to negative coordinates:\n\tStart: (%f, %f)\n\tEnd: (%f, %f)", segment.P1.X, segment.P1.Y, segment.P2.X, segment.P2.Y)
 				}
 			}
 			for _, segment := range m.Player2Segments {
 				if segment.P1.X < 0 || segment.P1.X > 1 ||
-					segment.P1.Y < 0 || segment.P1.Y > 1 ||
+					segment.P1.Y > -objects.MidSectionHalfWidth || segment.P1.Y < -1-objects.MidSectionHalfWidth ||
 					segment.P2.X < 0 || segment.P2.X > 1 ||
-					segment.P2.Y < 0 || segment.P2.Y > 1 {
+					segment.P2.Y > -objects.MidSectionHalfWidth || segment.P2.Y < -1-objects.MidSectionHalfWidth {
 					t.Errorf("Segment is not valid do to negative coordinates for segments:\n\tStart: (%f, %f)\n\tEnd: (%f, %f)", segment.P1.X, segment.P1.Y, segment.P2.X, segment.P2.Y)
 				}
 			}
-			if m.Player1King.X < 0 || m.Player1King.Y > 1 ||
-				m.Player2King.X < 0 || m.Player2King.Y > 1 {
-				t.Errorf("Segment is not valid do to negative coordinates for king pieces:\n\tKing piece 1: (%f, %f)\n\tKing piece 2: (%f, %f)", m.Player1King.X, m.Player1King.Y, m.Player2King.X, m.Player2King.Y)
+			if m.Player1King.X < 0 || m.Player1King.X > 1 ||
+				m.Player1King.Y < objects.MidSectionHalfWidth || m.Player1King.Y > 1+objects.MidSectionHalfWidth ||
+				m.Player2King.X < 0 || m.Player2King.Y > 1 ||
+				m.Player2King.Y > -objects.MidSectionHalfWidth || m.Player2King.Y < -1-objects.MidSectionHalfWidth {
+				t.Errorf("King piece is not valid do to negative coordinates:\n\tKing piece 1: (%f, %f)\n\tKing piece 2: (%f, %f)", m.Player1King.X, m.Player1King.Y, m.Player2King.X, m.Player2King.Y)
 			}
 
 			jsonData := m.ToDTO()

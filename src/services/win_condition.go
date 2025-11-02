@@ -6,6 +6,7 @@ import (
 	"ggarper1/SimpleGameBack/src/storage/objects"
 )
 
+// TODO: In order for this to work you must flip they y sign of one of the players maps
 func CheckWhoWon(m *objects.Map) objects.Player {
 	player1HitMatrix := [objects.NumPieces][objects.NumPieces]bool{}
 	for j := range objects.NumPieces {
@@ -21,7 +22,9 @@ func CheckWhoWon(m *objects.Map) objects.Player {
 				validIndices = append(validIndices, i)
 			}
 		}
-		player1Assignations[j] = validIndices[rand.Intn(len(validIndices))]
+		if len(validIndices) > 0 {
+			player1Assignations[j] = validIndices[rand.Intn(len(validIndices))]
+		}
 	}
 
 	player2HitMatrix := [objects.NumPieces][objects.NumPieces]bool{}
@@ -38,7 +41,9 @@ func CheckWhoWon(m *objects.Map) objects.Player {
 				validIndices = append(validIndices, i)
 			}
 		}
-		player2Assignations[j] = validIndices[rand.Intn(len(validIndices))]
+		if len(validIndices) > 0 {
+			player2Assignations[j] = validIndices[rand.Intn(len(validIndices))]
+		}
 	}
 
 	numPlayer1PiecesHitKing := 0
