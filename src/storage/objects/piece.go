@@ -14,19 +14,19 @@ type Piece struct {
 }
 
 func (p *Piece) DoesHit(m *Map, point *Point) bool {
-	line, err := NewLine(p.Position, *point)
+	pieceSegment, err := NewSegment(*point, p.Position)
 	if err != nil {
 		panic("Either two pieces where generated with sane position or your passing same piece twice as argument")
 	}
 
-	lineAngle := line.Angle()
+	segmentAngle := pieceSegment.Angle()
 
-	if lineAngle < p.Angle-fovSemiAngle || lineAngle > p.Angle+fovSemiAngle {
+	if segmentAngle < p.Angle-fovSemiAngle || segmentAngle > p.Angle+fovSemiAngle {
 		return false
 	}
 
 	for _, segment := range m.Player1Segments {
-		doesIntersect, _ := line.IntersectionSegment(segment)
+		doesIntersect, _ := pieceSegment.IntersectionSegment(segment)
 
 		if doesIntersect {
 			return false
@@ -34,7 +34,7 @@ func (p *Piece) DoesHit(m *Map, point *Point) bool {
 	}
 
 	for _, segment := range m.Player2Segments {
-		doesIntersect, _ := line.IntersectionSegment(segment)
+		doesIntersect, _ := pieceSegment.IntersectionSegment(segment)
 
 		if doesIntersect {
 			return false

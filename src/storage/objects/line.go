@@ -24,7 +24,7 @@ func NewLineFromAngle(p Point, angle float64) Line {
 func (line Line) Angle() float64 {
 	dx := line.P1.X - line.P2.X
 	dy := line.P1.Y - line.P2.Y
-	return math.Atan2(dy, dx)
+	return math.Mod(math.Atan2(dy, dx)+math.Pi*2, math.Pi*2)
 }
 
 func (line Line) IntersectionLine(other Line) (bool, Point) {

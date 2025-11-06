@@ -2,6 +2,7 @@ package services_tests
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"math/rand"
@@ -16,11 +17,15 @@ const (
 	numTests = 10
 )
 
-type mapsInJSON struct {
+type mapsToJSON struct {
 	Data []json.RawMessage `json:"data"`
 }
 
-func TestWinCondition(t *testing.T) {
+type mapsInJSON struct {
+	Data []objects.Map `json:"data"`
+}
+
+func generateMaps() error {
 	var jsonMaps [numTests]json.RawMessage
 	for i := range numTests {
 		m := objects.NewMap()
@@ -34,7 +39,7 @@ func TestWinCondition(t *testing.T) {
 				var err error
 				added, err = m.AddPlayer1Piece(piece)
 				if err != nil {
-					panic(fmt.Sprintf("Error occured while adding piece:\n%v", err))
+					return errors.New(fmt.Sprintf("Error occured while adding piece:\n%v", err))
 				}
 			}
 
@@ -46,27 +51,42 @@ func TestWinCondition(t *testing.T) {
 				var err error
 				added, err = m.AddPlayer2Piece(piece)
 				if err != nil {
-					panic(fmt.Sprintf("Error occured while adding piece:\n%v", err))
+					return errors.New(fmt.Sprintf("Error occured while adding piece:\n%v", err))
 				}
 			}
 		}
 
 		jsonMaps[i] = m.ToDTO()
-
-		player := services.CheckWhoWon(&m)
-
-		fmt.Printf("Map %d: Player %d Wone\n", i, player)
-
 	}
 
-	maps := mapsInJSON{jsonMaps[:]}
+	maps := mapsToJSON{jsonMaps[:]}
 	jsonData, err := json.Marshal(maps)
 	if err != nil {
-		panic("Could not encode to json")
+		return errors.New("Could not encode to json")
 	}
 
 	err = os.WriteFile("maps.json", jsonData, 0o644)
 	if err != nil {
-		t.Error("Was not capable for writing json to file")
+		return errors.New("was not capable of writting to file")
+	}
+	return nil
+}
+
+func TestWinCondition(t *testing.T) {
+	if _, err := os.Stat("maps.json"); errors.Is(err, os.ErrNotExist) {
+		fmt.Print("Generating maps...\n")
+		generateMaps()
+	}
+
+	var testMaps mapsInJSON
+	data, err := os.ReadFile("maps.json")
+	if err != nil {
+		panic("something went wrong while reading file")
+	}
+	json.Unmarshal(data, &testMaps)
+
+	for i, m := range testMaps.Data {
+		player := services.CheckWhoWon(&m)
+		fmt.Printf("Player %d won in map %d\n", player, i)
 	}
 }

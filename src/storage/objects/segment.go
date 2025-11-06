@@ -17,6 +17,12 @@ func NewSegment(p1 Point, p2 Point) (Segment, error) {
 	return Segment{p1, p2}, nil
 }
 
+func (segment Segment) Angle() float64 {
+	dx := segment.P1.X - segment.P2.X
+	dy := segment.P1.Y - segment.P2.Y
+	return math.Mod(math.Atan2(dy, dx)+math.Pi*2, math.Pi*2)
+}
+
 func (segment Segment) ShortestDistanceToPoint(point Point) float64 {
 	// Algorithm explanation:
 	// 		Imagine a triangle formed by this segment's endpoints

@@ -6,7 +6,6 @@ import (
 	"ggarper1/SimpleGameBack/src/storage/objects"
 )
 
-// TODO: In order for this to work you must flip they y sign of one of the players maps
 func CheckWhoWon(m *objects.Map) objects.Player {
 	player1HitMatrix := [objects.NumPieces][objects.NumPieces]bool{}
 	for j := range objects.NumPieces {
