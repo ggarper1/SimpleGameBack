@@ -1,17 +1,17 @@
-import enum
+import sys
 import matplotlib.pyplot as plt
 import json
 import numpy as np
 from matplotlib.patches import Wedge
 import matplotlib.patches as mpatches
 
-def read_data():
-    with open("maps.json") as file:
+def read_data(path):
+    with open(path) as file:
         return json.load(file)
     return None
 
 def main():
-    maps = read_data()
+    maps = read_data(sys.argv[1])
     for data in maps["data"]:
             # Create figure and axis
         fig, ax = plt.subplots(figsize=(10, 12))

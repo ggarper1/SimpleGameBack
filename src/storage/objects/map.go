@@ -255,10 +255,13 @@ func (m *Map) AddPlayer1Piece(piece Piece) (bool, error) {
 	}
 
 	if piece.Position.X < 0 || piece.Position.X > 1 {
-		return false, errors.New("Invalid X coordinate")
+		return false, nil
 	}
 	if piece.Position.Y < MidSectionHalfWidth || piece.Position.Y > 1+MidSectionHalfWidth {
-		return false, errors.New("Invalid Y coordinate")
+		return false, nil
+	}
+	if piece.Angle < 0 || piece.Angle > math.Pi*2 {
+		return false, nil
 	}
 
 	for _, segment := range m.Player1Segments {
@@ -285,10 +288,13 @@ func (m *Map) AddPlayer2Piece(piece Piece) (bool, error) {
 	}
 
 	if piece.Position.X < 0 || piece.Position.X > 1 {
-		return false, errors.New("Invalid X coordinate")
+		return false, nil
 	}
 	if piece.Position.Y > -MidSectionHalfWidth || piece.Position.Y < -1-MidSectionHalfWidth {
-		return false, errors.New("Invalid Y coordinate")
+		return false, nil
+	}
+	if piece.Angle < 0 || piece.Angle > math.Pi*2 {
+		return false, nil
 	}
 
 	for _, segment := range m.Player2Segments {

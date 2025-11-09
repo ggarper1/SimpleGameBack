@@ -6,9 +6,9 @@ from shapely.geometry import Point, LineString
 from shapely.lib import intersects
 
 FILE_NAMES = [
-    "point.json",
-    "line.json",
-    "segment.json"
+    "../objects_tests/point.json",
+    "../objects_tests/line.json",
+    "../objects_tests/segment.json"
 ]
 TESTS_PER_METHOD = 100
 
@@ -243,7 +243,7 @@ def create_segment_test_dataset():
 def generate_test_datasets():
     for file_name in FILE_NAMES:
         if not os.path.isfile(file_name):
-            under_test = file_name.split('.')[0]
+            under_test = file_name.split('/')[-1].split('.')[0]
             if under_test == "point":
                 test_json = create_point_test_dataset()
                 with open(f"{file_name}", "w") as f:
