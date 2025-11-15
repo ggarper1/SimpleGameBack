@@ -9,8 +9,8 @@ const (
 )
 
 type Piece struct {
-	Position Point
-	Angle    float64
+	Position Point   `json:"position"`
+	Angle    float64 `json:"angle"`
 }
 
 func (p *Piece) DoesHit(m *Map, point *Point) bool {
