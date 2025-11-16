@@ -151,8 +151,8 @@ func (matchCreator MatchCreator) handleSingleMatch(m *Match) {
 		}
 		ctr += 1
 	}
-	if ctr < objects.NumPieces && !player1Failed {
-		panic("Expected more pieces")
+	if ctr < objects.NumPieces {
+		player1Failed = true
 	}
 
 	player2Failed := false
@@ -168,8 +168,8 @@ func (matchCreator MatchCreator) handleSingleMatch(m *Match) {
 		}
 		ctr += 1
 	}
-	if ctr < objects.NumPieces && !player2Failed {
-		panic("Expected more pieces")
+	if ctr < objects.NumPieces {
+		player2Failed = true
 	}
 
 	result := objects.NoPlayer
@@ -188,4 +188,27 @@ func (matchCreator MatchCreator) handleSingleMatch(m *Match) {
 
 	m.player1.conn.WriteJSON(player1MatchResult)
 	m.player2.conn.WriteJSON(player2MatchResult)
+
+	for {
+		_, _, err := m.player1.conn.ReadMessage()
+		if err != nil {
+			// Check if the error is the expected close error
+			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+				break
+			}
+			log.Println("Read error (unexpected connection break):", err)
+			break
+		}
+	}
+	for {
+		_, _, err := m.player2.conn.ReadMessage()
+		if err != nil {
+			// Check if the error is the expected close error
+			if websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+				break
+			}
+			log.Println("Read error (unexpected connection break):", err)
+			break
+		}
+	}
 }
